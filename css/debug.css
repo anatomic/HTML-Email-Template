@@ -1,0 +1,30 @@
+@charset "UTF-8";
+/* ****************************** *\
+	EMAIL DEBUG STYLESHEET
+\* ****************************** */
+
+/*
+Author:             Ian Thomas
+Twitter:            @anatomic
+Author URL:         ian-thomas.net
+Version:            0.1
+Date:               28 November 2011
+
+This is a  small set of CSS styles to help debug html email production.
+
+It checks for things such as missing alt tags, local images, lack of image attributes and more.
+
+USAGE
+-----
+
+To use, simply link to this stylesheet and add class="debug" to the html tag. You can then setup any number of debug tests by adding the relevant class to the body tag.
+
+E.g.
+
+<html class="debug">
+	<head></head>
+	<body class="local-images">
+	</body>
+</html>
+
+*/
