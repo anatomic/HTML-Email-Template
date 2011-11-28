@@ -3,7 +3,6 @@
 
 $builder = new EmailBuilder();
 $builder->buildEmailVision();
-$builder->build();
 
 
 class EmailBuilder{
@@ -13,6 +12,7 @@ class EmailBuilder{
 	protected $plainCounter = 1;
 	protected $settingsFile = 'config/settings.ini';
 	protected static $settings = array();
+	protected $processTemplates = false;
 
 	public function __construct(){
 		if(!is_readable($this->settingsFile)){
@@ -28,6 +28,10 @@ class EmailBuilder{
 			}
 		}
 		$this->resetCounters();
+		if(isset(self::$settings['international'])){
+			$this->processTemplates = true;
+			//TODO: Other setup for processing multiple templates here
+		}
 	}
 	
 	protected function resetCounters(){

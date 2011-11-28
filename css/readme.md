@@ -35,7 +35,6 @@ You can tell if you are in debug mode because the body will go orange or red, de
 * .image-links - Images inside anchors are ok.  Images inside anchors without border=0 are not.
 * .table-atts - Make sure all your tables have the right attributes, namely cellpadding, cellspacing and border.  (I may add width to this list later)
 
-
 ## Why have you made this?
 
 If you've ever coded up a 2000px+ high email with various levels of table recursion you are going to know why. Something breaks the build and you've got one hell of a task to find it!
@@ -44,7 +43,7 @@ Granted, this only checks for some basic things - it won't tell you if you have 
 
 ## What typical things should I do while building?
 
-Here's  my checklist - it's not exhaustive but it helps
+Here's  my checklist - it's not exhaustive but it helps:
 
 * Don't space text using margin, padding or `<p>` tags
 * Always make sure that you have set `align="left"` on your `<td>` if you want normal paragraph justification. Certain flavours of Outlook will pass centre alignment down the tree if you don't (and you have a centre aligned email)
