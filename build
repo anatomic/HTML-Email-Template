@@ -1,0 +1,50 @@
+#!/usr/bin/php
+<?php
+$builder = new EmailBuilder();
+if($builder->buildEmailVision()){
+	die(0);
+}
+else{
+	die(3);
+}
+
+
+class EmailBuilder{
+	protected $htmlFile = 'index.html';
+	protected $plainFile = 'plain.txt';
+
+	public function setHtmlFile($filename){
+		$this->htmlFile = $filename;
+	}
+	
+	public function setPlainFile($filename){
+		$this->plainFile = $filename;
+	}
+	
+	public function buildEmailVision(){
+		$html = fopen($this->htmlFile, 'r');
+		$plain = fopen($this->plainFile, 'r');
+		
+		if(file_exists('export/emv.txt')){
+			$emv = fopen('export/emv.txt', 'w');
+		}
+		else{
+			mkdir('export', 0755);
+			$emv = fopen('export/emv.txt', 'w');
+		}
+		
+		$htmlContents = fread($html, filesize($this->htmlFile));
+		$plainContents = fread($plain, filesize($this->plainFile));
+		fclose($html);
+		fclose($plain);
+		
+		fwrite($emv, "[EMV TEXTPART]\n");
+		fwrite($emv, $plainContents);
+		fwrite($emv, "\n\n");
+		fwrite($emv, "[EMV HTMLPART]\n");
+		fwrite($emv, $htmlContents);
+		fclose($emv);
+		return true;
+	}
+	
+}

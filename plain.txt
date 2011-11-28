@@ -1,0 +1,21 @@
+
+******************************
+
+Plain text version of email
+
+******************************
+
+
+New Section
+----
+
+
+--
+
+Subsection
+
+
+
+--------
+
+Footer
