@@ -11,11 +11,11 @@ To use, simply link to this stylesheet and add class="debug" to the html tag. Yo
 Some of the checks dim images, others put a nice coloured border. If your code is broken, you'll get a red border and full opacity!
 
 E.g.
-  <html class="debug">
-	  <head></head>
-	  <body class="local-images">
-	  </body>
-  </html>
+    <html class="debug">
+	    <head></head>
+	    <body class="local-images">
+	    </body>
+    </html>
 
 
 ## WHAT CAN I CHECK FOR?
