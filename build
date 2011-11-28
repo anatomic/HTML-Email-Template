@@ -40,18 +40,38 @@ class EmailBuilder{
 		$this->plainFile = $filename;
 	}
 	
-	public function replaceHtmlLink($match){
+	protected function replaceHtmlLink($match){
 		$newLink = 'href="http://'.$match["url"].'?CMP=EMA-'.self::$settings["email"]["id"].'&CRE='.$this->htmlCounter.'&PLA=html&TYPE=email"';
-		fwrite(STDOUT, 'HTML link ' . $this->htmlCounter . ': ' . $newLink . "\n");
 		$this->htmlCounter++;
+		fwrite(STDOUT, 'HTML link ' . $this->htmlCounter . ': ' . $newLink . "\n");
 		return $newLink;
 	}
 	
-	public function replaceTextLink($match){
+	protected function replaceTextLink($match){
 		$newLink = 'http://'.$match["url"].'?CMP=EMA-'.self::$settings["email"]["id"].'&CRE='.$this->plainCounter.'&PLA=text&TYPE=email';
-		fwrite(STDOUT, 'Plain link ' . $this->plainCounter . ': ' . $newLink . "\n");
 		$this->plainCounter++;
+		fwrite(STDOUT, 'Plain link ' . $this->plainCounter . ': ' . $newLink . "\n");
 		return $newLink;
+	}
+	
+	protected function replaceAllLinks($contents, $mode = 'html'){
+		$linkTagPattern = '/href="http:\/\/(?P<url>[\w\d\.\/-]+)"/';
+		$textLinkPattern = '/http:\/\/(?P<url>[\w\d\.\/-]+)/';
+		
+		if($mode === 'html'){
+			$pattern = $linkTagPattern;
+			$callback = 'self::replaceHtmlLink';
+		}
+		else{
+			$pattern = $textLinkPattern;
+			$callback = 'self::replaceTextLink';
+		}
+		
+		$contents = preg_replace_callback($pattern, $callback, $contents, -1, $count);
+		
+		fwrite(STDOUT, 'Total '. $mode . ' links: ' . $count . "\n");
+		
+		return $contents;
 	}
 	
 	public function buildEmailVision(){
@@ -72,13 +92,8 @@ class EmailBuilder{
 		fclose($html);
 		fclose($plain);
 		
-		$linkTagPattern = '/href="http:\/\/(?P<url>[\w\d\.\/-]+)"/';
-		$textLinkPattern = '/http:\/\/(?P<url>[\w\d\.\/-]+)/';
-		$htmlContents = preg_replace_callback($linkTagPattern, "self::replaceHtmlLink" , $htmlContents, -1 , $htmlCount);
-		$plainContents = preg_replace_callback($textLinkPattern, "self::replaceTextLink", $plainContents, -1, $plainCount);
-		
-		fwrite(STDOUT, 'Total HTML links: ' . $htmlCount . "\n");
-		fwrite(STDOUT, 'Total plain text links: ' . $plainCount . "\n");
+		$htmlContents = $this->replaceAllLinks($htmlContents, 'html');
+		$htmlContents = $this->replaceAllLinks($plainContents, 'plain');
 		
 		fwrite($emv, "[EMV TEXTPART]\n");
 		fwrite($emv, $plainContents);
