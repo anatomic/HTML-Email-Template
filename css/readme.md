@@ -32,6 +32,9 @@ You can tell if you are in debug mode because the body will go orange or red, de
 * .query-string - Because we're building these emails using the command line tool, we don't want query strings on the links
 * .text-align - You think it's on the left but Outlook doesn't (only applies for centre aligned emails)
 * .cell-size - More of a helper than a rule, if you have an image in a cell you should set height and width, equally if you have text you might want to.  If you've got neither, you definitely should do.
+* .image-links - Images inside anchors are ok.  Images inside anchors without border=0 are not.
+* .table-atts - Make sure all your tables have the right attributes, namely cellpadding, cellspacing and border.  (I may add width to this list later)
+
 
 ## Why have you made this?
 
@@ -50,3 +53,6 @@ Here's  my checklist - it's not exhaustive but it helps
 * All images need an `alt` attribute, even if it is just empty
 * Equally, set all images to `display:block`, essential if you are using them for layout (N.B. For the debug style sheet to work you must have `display:block`as the first declaration in your style sheet)
 * Images have to be on a server accessible by the world. If they aren't, you're going to look very silly
+* If things need to line up horizontally, you need to put them in different rows.  Don't rely on `<br/>` to do it, if the template is updated by users it *will* go wrong
+* Make sure you have `border=0` on all images that are used in links
+* This one is a hard one to test as Chrome automagically inserts a surrounding `<tr>` but if you find yourself with a `<table><td>` situation you'll be in trouble in Outlook land!
