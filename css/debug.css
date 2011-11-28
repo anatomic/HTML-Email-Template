@@ -19,6 +19,8 @@ USAGE
 
 To use, simply link to this stylesheet and add class="debug" to the html tag. You can then setup any number of debug tests by adding the relevant class to the body tag.
 
+Some of the checks dim images, others put a nice coloured border. If your code is broken, you'll get a red border and full opacity!
+
 E.g.
 
 <html class="debug">
@@ -27,4 +29,49 @@ E.g.
 	</body>
 </html>
 
+WHAT CAN I CHECK FOR?
+-----
+
+.block-images - Are your images setup with display:block
+.local-images - If they're not on a server, they're not any use
+.alt-text - Sometimes you need to write something, sometimes you don't, you always need the attribute though
+.real-links - If there isn't a "http://" then it's going to break
+
 */
+
+.debug body{
+	background:rgba(255, 0 , 0 , 0.1);
+}
+
+.debug body[class=""]{
+	background:rgba(255,155, 0, 0.2);
+}
+
+.debug .alt-text img,
+.debug .local-images img,
+.debug .block-images img,
+.debug .real-links a[href=""],
+.debug .real-links a{
+	border:1px solid red;
+}
+
+.debug .alt-text img[alt=""],
+.debug .local-images img[src],
+.debug .block-images img[style]{
+	border:1px solid orange;
+}
+
+.debug .alt-text img[alt],
+.debug .real-links a[href^="http://"]{
+	border:1px solid green;
+}
+
+/* If you don't put these last they get overwritten by the generic rules */
+.debug .local-images img[src^="http://"],
+.debug .block-images img[style^="display:block"]{
+	opacity:0.15;
+	border:none;
+}
+.debug .block-images img{
+	opacity:1;
+}
