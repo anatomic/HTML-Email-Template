@@ -11,9 +11,9 @@ else{
 
 class EmailBuilder{
 	protected $htmlFile = 'index.html';
-	protected $htmlCounter = 0;
+	protected $htmlCounter = 2;
 	protected $plainFile = 'plain.txt';
-	protected $plainCounter = 0;
+	protected $plainCounter = 1;
 	protected $settingsFile = 'config/settings.ini';
 	protected static $settings = array();
 
@@ -30,6 +30,9 @@ class EmailBuilder{
 				self::$settings[$group] = $settings;
 			}
 		}
+		if(isset(self::$settings['email']['mirror'])&&self::$settings['email']['mirror'] === 'false'){
+			$this->htmlCounter = 1;
+		}
 	}
 
 	public function setHtmlFile($filename){
@@ -41,16 +44,22 @@ class EmailBuilder{
 	}
 	
 	protected function replaceHtmlLink($match){
-		$newLink = 'href="http://'.$match["url"].'?CMP=EMA-'.self::$settings["email"]["id"].'&CRE='.$this->htmlCounter.'&PLA=html&TYPE=email"';
-		$this->htmlCounter++;
+		$newLink = 'href="http://'.$match["url"].'?CRE='.$this->htmlCounter;
+		foreach(self::$settings['tracking']['html'] as $param => $value){
+			$newLink.='&'.$param.'='.$value;
+		}
 		fwrite(STDOUT, 'HTML link ' . $this->htmlCounter . ': ' . $newLink . "\n");
+		$this->htmlCounter++;
 		return $newLink;
 	}
 	
 	protected function replaceTextLink($match){
-		$newLink = 'http://'.$match["url"].'?CMP=EMA-'.self::$settings["email"]["id"].'&CRE='.$this->plainCounter.'&PLA=text&TYPE=email';
-		$this->plainCounter++;
+		$newLink = 'href="http://'.$match["url"].'?CRE='.$this->plainCounter;
+		foreach(self::$settings['tracking']['text'] as $param => $value){
+			$newLink.='&'.$param.'='.$value;
+		}
 		fwrite(STDOUT, 'Plain link ' . $this->plainCounter . ': ' . $newLink . "\n");
+		$this->plainCounter++;
 		return $newLink;
 	}
 	
@@ -73,6 +82,14 @@ class EmailBuilder{
 		
 		return $contents;
 	}
+
+	protected function prepareHtmlForSending($html){
+		$html = preg_replace('/<title>/','<title>'.self::$settings['email']['subject'], $html);
+		$commentsPattern = '/<!--[\w\d .↓↥]+-->/';
+		$html = preg_replace_callback($commentsPattern, function($match){return '';}, $html, -1, $count);
+		fwrite(STDOUT, 'Removed ' . $count . " comments\n");
+		return $html;
+	}
 	
 	public function buildEmailVision(){
 		$stdout = fopen('php://stdout', 'w');
@@ -93,7 +110,9 @@ class EmailBuilder{
 		fclose($plain);
 		
 		$htmlContents = $this->replaceAllLinks($htmlContents, 'html');
-		$htmlContents = $this->replaceAllLinks($plainContents, 'plain');
+		$plainContents = $this->replaceAllLinks($plainContents, 'plain');
+		
+		$htmlContents = $this->prepareHtmlForSending($htmlContents);
 		
 		fwrite($emv, "[EMV TEXTPART]\n");
 		fwrite($emv, $plainContents);
