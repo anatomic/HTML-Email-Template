@@ -36,7 +36,15 @@ WHAT CAN I CHECK FOR?
 .local-images - If they're not on a server, they're not any use
 .alt-text - Sometimes you need to write something, sometimes you don't, you always need the attribute though
 .real-links - If there isn't a "http://" then it's going to break
-
+.padding - Don't use it
+.margin - Or this
+.spacers - This will find if you've set either margin or padding
+.paragraphs - Potentially disasterous, avoid where possible and use <td> elements
+.query-string - Because we're building these emails using the command line tool, we don't want query strings on the links
+.text-align - Outlook likes to flow things badly if you're not careful!
+.cell-size - check to see if you've added a width and a height to a cell
+.image-links - if they've not got border=0 they're going to look pants!
+.table-atts - cellpadding, cellspacing and border are all essential (and ideally 0)!
 */
 
 .debug body{
@@ -51,27 +59,49 @@ WHAT CAN I CHECK FOR?
 .debug .local-images img,
 .debug .block-images img,
 .debug .real-links a[href=""],
-.debug .real-links a{
+.debug .real-links a,
+.debug .padding *[style*="padding"],
+.debug .margin *[style*="margin"],
+.debug .spacers *[style*="padding"],
+.debug .spacers *[style*="margin"],
+.debug .query-string a[href*="?"],
+.debug .text-align td[style*="font-family"],
+.debug .cell-size td,
+.debug .image-links a > img,
+.debug .table-atts table{
 	border:1px solid red;
 }
 
 .debug .alt-text img[alt=""],
 .debug .local-images img[src],
-.debug .block-images img[style]{
+.debug .block-images img[style],
+.debug .paragraphs p,
+.debug .text-align td[align=""][style*="font-family"],
+.debug .cell-size td > img,
+.debug .cell-size td[style*="font-family"],
+.debug .image-links a > img[border],
+.debug .table-atts table[cellpadding][cellspacing][border]{
 	border:1px solid orange;
 }
 
 .debug .alt-text img[alt],
-.debug .real-links a[href^="http://"]{
+.debug .real-links a[href^="http://"],
+.debug .text-align td[align="left"][style*="font-family"],
+.debug .text-align td[align="right"][style*="font-family"],
+.debug .text-align td[align="center"][style*="font-family"],
+.debug .cell-size td[width][height],
+.debug .table-atts table[cellpadding="0"][cellspacing="0"][border="0"]{
 	border:1px solid green;
 }
 
 /* If you don't put these last they get overwritten by the generic rules */
 .debug .local-images img[src^="http://"],
-.debug .block-images img[style^="display:block"]{
+.debug .block-images img[style^="display:block"],
+.debug .image-links a > img[border="0"]{
 	opacity:0.15;
 	border:none;
 }
+
 .debug .block-images img{
 	opacity:1;
 }
