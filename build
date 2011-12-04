@@ -3,7 +3,7 @@
 
 $builder = new EmailBuilder();
 $builder->buildEmailVision();
-
+exit(0);
 
 class EmailBuilder{
 	protected $htmlFile = 'index.html';
