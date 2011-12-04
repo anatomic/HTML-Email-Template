@@ -6,13 +6,17 @@ $builder->buildEmailVision();
 exit(0);
 
 class EmailBuilder{
-	protected $htmlFile = 'index.html';
+	protected $htmlFile = 'base.html';
 	protected $htmlCounter = 2;
 	protected $plainFile = 'plain.txt';
 	protected $plainCounter = 1;
+	protected $libsDir = 'lib';
 	protected $settingsFile = 'config/settings.ini';
 	protected static $settings = array();
 	protected $processTemplates = false;
+	protected $variants = array();
+	protected $currentVariant = null;
+	protected $trackingData = null;
 
 	public function __construct(){
 		if(!is_readable($this->settingsFile)){
@@ -32,6 +36,13 @@ class EmailBuilder{
 			$this->processTemplates = true;
 			//TODO: Other setup for processing multiple templates here
 		}
+
+		if(isset(self::$settings['templates']) && count(self::$settings['templates']['versions'])>1){
+			foreach(self::$settings['templates']['versions'] as $template){
+				$this->variants[$template]= $this->buildEmailBody($template);
+			}
+		}
+
 	}
 	
 	protected function resetCounters(){
@@ -53,22 +64,59 @@ class EmailBuilder{
 	}
 	
 	protected function replaceHtmlLink($match){
-		$newLink = 'href="http://'.$match["url"].'?CRE='.$this->htmlCounter;
+		$newLink = 'http://'.$match["url"].'?CRE='.$this->htmlCounter . "&utm_content=".$this->htmlCounter;
 		foreach(self::$settings['tracking']['html'] as $param => $value){
-			$newLink.='&'.$param.'='.$value;
+			if($this->currentVariant!= null && ($param == 'CMP' || $param == 'utm_campaign')){
+				$newLink.='&'.$param.'='.$value.$this->currentVariant;
+			}
+			else{
+				$newLink.='&'.$param.'='.$value;	
+			}
 		}
+		
+		fwrite($this->trackingData, $this->htmlCounter . ',' . $newLink ."\n");
 		fwrite(STDOUT, 'HTML link ' . $this->htmlCounter . ': ' . $newLink . "\n");
+		$newLink = 'href="'.$newLink.'"';
 		$this->htmlCounter++;
 		return $newLink;
 	}
 	
 	protected function replaceTextLink($match){
-		$newLink = 'href="http://'.$match["url"].'?CRE='.$this->plainCounter;
+		$newLink = 'http://'.$match["url"].'?CRE='.$this->plainCounter . "&utm_content=".$this->plainCounter;
 		foreach(self::$settings['tracking']['text'] as $param => $value){
-			$newLink.='&'.$param.'='.$value;
+			if($this->currentVariant!= null && ($param == 'CMP' || $param == 'utm_campaign')){
+				$newLink.='&'.$param.'='.$value.$this->currentVariant;
+			}
+			else{
+				$newLink.='&'.$param.'='.$value;	
+			}
 		}
+
 		fwrite(STDOUT, 'Plain link ' . $this->plainCounter . ': ' . $newLink . "\n");
+		fwrite($this->trackingData, $this->plainCounter . ',' . $newLink ."\n");
 		$this->plainCounter++;
+		return $newLink;
+	}
+
+	protected function buildUnsubscribeLink($type){
+		$counter = $type == 'html' ? $this->htmlCounter : $this->plainCounter;
+		$newLink = self::$settings['email']['unsubscribe'].'?CRE='.$counter . "&utm_content=".$counter;
+		foreach(self::$settings['tracking'][$type] as $param => $value){
+			if($this->currentVariant!= null && ($param == 'CMP' || $param == 'utm_campaign')){
+				$newLink.='&'.$param.'='.$value.$this->currentVariant;
+			}
+			else{
+				$newLink.='&'.$param.'='.$value;	
+			}
+		}
+
+		if($type=='html'){
+			$this->htmlCounter++;		
+		}
+		else{
+			$this->plainCounter++;
+		}
+		
 		return $newLink;
 	}
 	
@@ -86,7 +134,8 @@ class EmailBuilder{
 		}
 		
 		$contents = preg_replace_callback($pattern, $callback, $contents, -1, $count);
-		fwrite(STDOUT, "\n**\n\n");
+		fwrite($this->trackingData, 'unsubscribe,' . $this->buildUnsubscribeLink($mode) ."\n");
+		fwrite(STDOUT, "\n**\n");
 		fwrite(STDOUT, 'Total '. $mode . ' links: ' . $count . "\n");
 		fwrite(STDOUT, "\n====================\n\n");
 		return $contents;
@@ -95,16 +144,21 @@ class EmailBuilder{
 	protected function prepareHtmlForSending($html){
 		$html = $this->replaceAllLinks($html, 'html');
 		$html = preg_replace('/<title>/','<title>'.self::$settings['email']['subject'], $html);
-		$commentsPattern = '/<!--[\w\d .↓↥]+-->/';
+
+		$commentsPattern = '/<!--[\w\d\s .↓↥\*\'"\/@\.:\n\,]+-->/';
+		
 		$html = preg_replace_callback($commentsPattern, function($match){return "";}, $html, -1, $count);
 		$html = preg_replace_callback('/\n[\s]+/', function($match){return "\n";}, $html, -1, $spaces);
+		
 		if(isset(self::$settings['email']['minify']) && self::$settings['email']['minify']==="true"){
 			$html = preg_replace_callback('/\n/', function($match){return "";}, $html, -1, $newlines);
 			fwrite(STDOUT, "Minified!\n");
 		}
+		
 		fwrite(STDOUT, 'Removed ' . $count . " comments\n");
 		fwrite(STDOUT, 'Removed ' . $spaces . " whitespace characters\n");
 		fwrite(STDOUT, "\n====================\n\n");
+		
 		return $html;
 	}
 	
@@ -114,32 +168,68 @@ class EmailBuilder{
 		fclose($fileHandle);
 		return $contents;
 	}
+
+	protected function buildEmailBody($template){
+		$body = '';
+			foreach(self::$settings['content'][$template] as $item){
+				$file = $this->libsDir .'/'.$item .'.html';
+				$element = fopen($file, 'r');
+				$body .= fread($element, filesize($file));
+				$body .= "\n\n";
+			}
+			return $body;
+	}
+
+	protected function outputEmailVision($name, $html, $plain){
+		fwrite(STDOUT, "Beginning output of template " . $name . "\n");
+		$emv = fopen('export/'.$name.'.txt', 'w');
+		fwrite($emv, "[EMV TEXTPART]\n");
+		fwrite($emv, $plain);
+		fwrite($emv, "\n\n");
+		fwrite($emv, "[EMV HTMLPART]\n");
+		fwrite($emv, $html);
+		fclose($emv);
+		
+		fwrite(STDOUT, "Exported html and plain text for Campaign Commander to export/".$name.".txt\n");
+		fwrite(STDOUT, "\n====================\n");
+	}
 	
 	public function buildEmailVision(){
 		if(!is_dir('export')){
 			mkdir('export', 0755);
 		}
 		
+		$this->trackingData = fopen('export/'.self::$settings['email']['id'].'_trackingData.csv', 'w');
+
 		fwrite(STDOUT, "Building for Email Vision\n");
-		
-		$emv = fopen('export/emv.txt', 'w');
-		
-		$htmlContents = $this->getContents($this->htmlFile);
-		$plainContents = $this->getContents($this->plainFile);
+
+		if(isset(self::$settings['templates'])){
+			foreach(self::$settings['templates']['versions'] as $template){
+				$this->currentVariant = $template;
+				$htmlContents = $this->getContents($this->htmlFile);
+				$plainContents = $this->getContents($this->plainFile);
 				
-		$htmlContents = $this->prepareHtmlForSending($htmlContents);
-		$plainContents = $this->replaceAllLinks($plainContents, 'plain');
-		
-		fwrite($emv, "[EMV TEXTPART]\n");
-		fwrite($emv, $plainContents);
-		fwrite($emv, "\n\n");
-		fwrite($emv, "[EMV HTMLPART]\n");
-		fwrite($emv, $htmlContents);
-		fclose($emv);
-		
-		fwrite(STDOUT, "Exported html and plain text for Campaign Commander to export/emv.txt\n");
-		fwrite(STDOUT, "\n====================\n");
-		$this->resetCounters();
+				$htmlContents = preg_replace('/\{% email_body %\}/', $this->variants[$template], $htmlContents);
+
+				$htmlContents = $this->prepareHtmlForSending($htmlContents);
+				$plainContents = $this->replaceAllLinks($plainContents, 'text');
+				
+				$this->outputEmailVision($template, $htmlContents, $plainContents);
+				$this->resetCounters();
+				$this->currentVariant = null;
+			}
+		}
+		else{
+			$htmlContents = $this->getContents($this->htmlFile);
+			$plainContents = $this->getContents($this->plainFile);
+
+			$htmlContents = $this->prepareHtmlForSending($htmlContents);
+			$plainContents = $this->replaceAllLinks($plainContents, 'text');
+			
+			$this->outputEmailVision("emv", $htmlContents, $plainContents);
+			$this->resetCounters();
+		}
+		fclose($this->trackingData);
 	}
 	
 	public function build(){

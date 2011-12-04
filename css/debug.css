@@ -7,8 +7,8 @@
 Author:             Ian Thomas
 Twitter:            @anatomic
 Author URL:         ian-thomas.net
-Version:            0.1
-Date:               28 November 2011
+Version:            0.2
+Date:               4 December 2011
 
 This is a  small set of CSS styles to help debug html email production.
 
@@ -68,7 +68,7 @@ WHAT CAN I CHECK FOR?
 .debug .text-align td[style*="font-family"],
 .debug .cell-size td,
 .debug .image-links a > img,
-.debug .table-atts table,
+.debug .table-atts table
 {
 	border:1px solid red;
 }
@@ -91,7 +91,7 @@ WHAT CAN I CHECK FOR?
 .debug .text-align td[align="right"][style*="font-family"],
 .debug .text-align td[align="center"][style*="font-family"],
 .debug .cell-size td[width][height],
-.debug .table-atts table[cellpadding="0"][cellspacing="0"][border="0"],
+.debug .table-atts table[cellpadding="0"][cellspacing="0"][border="0"]
 {
 	border:1px solid green;
 }
