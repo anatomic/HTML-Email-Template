@@ -37,7 +37,7 @@ class EmailBuilder{
 			//TODO: Other setup for processing multiple templates here
 		}
 
-		if(isset(self::$settings['templates']) && count(self::$settings['templates']['versions'])>1){
+		if(isset(self::$settings['templates']) && count(self::$settings['templates']['versions'])>0){
 			foreach(self::$settings['templates']['versions'] as $template){
 				$this->variants[$template]= $this->buildEmailBody($template);
 			}
