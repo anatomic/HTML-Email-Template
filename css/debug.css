@@ -7,8 +7,8 @@
 Author:             Ian Thomas
 Twitter:            @anatomic
 Author URL:         ian-thomas.net
-Version:            0.1
-Date:               28 November 2011
+Version:            0.2
+Date:               4 December 2011
 
 This is a  small set of CSS styles to help debug html email production.
 
@@ -32,7 +32,7 @@ E.g.
 WHAT CAN I CHECK FOR?
 -----
 
-.block-images - Are your images	 setup with display:block
+.block-images - Are your images setup with display:block
 .local-images - If they're not on a server, they're not any use
 .alt-text - Sometimes you need to write something, sometimes you don't, you always need the attribute though
 .real-links - If there isn't a "http://" then it's going to break
@@ -67,8 +67,9 @@ background: rgba(255,155, 0, 0.2);
 .debug .text-align td[style*="font-family"],
 .debug .cell-size td,
 .debug .image-links a > img,
-.debug .table-atts table {
-border: 1px solid red;
+.debug .table-atts table
+{
+	border:1px solid red;
 }
 
 .debug .alt-text img[alt=""],
@@ -79,8 +80,8 @@ border: 1px solid red;
 .debug .cell-size td > img,
 .debug .cell-size td[style*="font-family"],
 .debug .image-links a > img[border],
-.debug .table-atts table[cellpadding][cellspacing][border] {
-border: 1px solid orange;
+.debug .table-atts table[cellpadding][cellspacing][border]{
+	border:1px solid orange;
 }
 
 .debug .alt-text img[alt],
@@ -89,18 +90,19 @@ border: 1px solid orange;
 .debug .text-align td[align="right"][style*="font-family"],
 .debug .text-align td[align="center"][style*="font-family"],
 .debug .cell-size td[width][height],
-.debug .table-atts table[cellpadding="0"][cellspacing="0"][border="0"] {
-border: 1px solid green;
+.debug .table-atts table[cellpadding="0"][cellspacing="0"][border="0"]
+{
+	border:1px solid green;
 }
 
 /* If you don't put these last they get overwritten by the generic rules */
 .debug .local-images img[src^="http://"],
 .debug .block-images img[style^="display:block"],
-.debug .image-links a > img[border="0"] {
-opacity: 0.15;
-border: none;
+.debug .image-links a > img[border="0"]{
+	opacity:0.15;
+	border:none;
 }
 
-.debug .block-images img {
-opacity: 1;
+.debug .block-images img{
+	opacity:1;
 }

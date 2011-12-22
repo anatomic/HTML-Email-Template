@@ -14,8 +14,12 @@
     You don't need to have tracking on any links, this is sorted out in the config/settings.ini file and the command line tool
     
     Add comments liberally as they are all removed at build time anyway, don't forget to remove any LiveReload JS and the link to the debug stylesheet
+
+    This file should be used to build the email locally as the base.html file is for export use only.  Test out your building blocks by including them as .html files in whatever order you like, but remember to set up the correct order in the settings.ini file for use with the build script.
+
+    Any changes that are made outside the Email Body will need to be reflected in base.html, otherwise you're email may look a bit ropey!
    -->
-	<body style="padding:0; margin:0;" class="alt-text">
+	<body style="padding:0; margin:0;" class="">
 		<!-- ↓ Full Width Wrapper ↓ -->
 		<table cellpadding="0" cellspacing="0" border="0" width="100%">
 			<tr>
@@ -25,7 +29,7 @@
             <tr>
 							<td align="left" style="font-family">
 								<!-- ↓ Email Header ↓ -->
-                <a href=""><img src="http://placehold.it/600x200&text=Image" alt="Text" style="display:block;"></a>
+                <a href=""><img src="http://placehold.it/600x200&text=Image" alt="Image" style="display:block;"></a>
 								<!-- ↥ END Email Header ↥ -->
 							</td>
 						</tr>
@@ -33,6 +37,10 @@
 							<td width="600" height="200">
 								<!-- ↓ Email Body ↓ -->
                 
+                <?php include("lib/header.html"); ?>
+
+                <?php include("lib/promo.html"); ?>
+
 								<!-- ↥ END Email Body ↥ -->
 							</td>
 						</tr>
